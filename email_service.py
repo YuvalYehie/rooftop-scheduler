@@ -153,6 +153,46 @@ See you on the roof! \U0001f3d9\ufe0f
     _send(booking["email"], subject, text, html)
 
 
+def send_magic_link(booking: dict) -> None:
+    app_url    = os.environ.get("APP_URL", "http://localhost:3000")
+    manage_url = f"{app_url}/?token={booking['edit_token']}"
+    name  = booking["name"]
+    title = booking["title"]
+    start = _fmt(booking["start_time"])
+
+    subject = f"\U0001f511 Your booking management link \u2014 {title}"
+    text = f"""Hi {name},
+
+You requested a link to manage your rooftop booking.
+
+Event:  {title}
+Starts: {start}
+
+Click the link below to edit or cancel your booking:
+{manage_url}
+
+If you didn't request this, you can safely ignore this email.
+""".strip()
+
+    html = f"""<!DOCTYPE html><html><body style="font-family:sans-serif;max-width:520px;margin:auto;padding:24px;color:#1a1a1a">
+  <div style="background:#6366f1;padding:20px 24px;border-radius:12px 12px 0 0">
+    <h1 style="color:#fff;margin:0;font-size:22px">\U0001f511 Booking Management Link</h1>
+  </div>
+  <div style="border:1px solid #e5e7eb;border-top:none;padding:24px;border-radius:0 0 12px 12px">
+    <p style="margin-top:0">Hi <strong>{name}</strong>,</p>
+    <p>You requested a link to manage your rooftop booking.</p>
+    <table style="width:100%;border-collapse:collapse;margin:16px 0">
+      <tr><td style="padding:8px 0;color:#6b7280;width:90px">Event</td><td><strong>{title}</strong></td></tr>
+      <tr><td style="padding:8px 0;color:#6b7280">Starts</td><td>{start}</td></tr>
+    </table>
+    <a href="{manage_url}" style="display:inline-block;background:#6366f1;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600">Edit / Cancel My Booking</a>
+    <p style="margin-top:20px;font-size:13px;color:#9ca3af">If you didn't request this, you can safely ignore this email.</p>
+  </div>
+</body></html>"""
+
+    _send(booking["email"], subject, text, html)
+
+
 def send_reminder(booking: dict) -> None:
     app_url    = os.environ.get("APP_URL", "http://localhost:3000")
     manage_url = f"{app_url}/?token={booking['edit_token']}"

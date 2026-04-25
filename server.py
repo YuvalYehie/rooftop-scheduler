@@ -23,7 +23,7 @@ if env_path.exists():
             k, _, v = line.partition("=")
             os.environ.setdefault(k.strip(), v.strip())
 
-from email_service import send_confirmation, send_reminder  # noqa: E402
+from email_service import send_confirmation, send_magic_link, send_reminder  # noqa: E402
 
 PORT    = int(os.environ.get("PORT", 3000))
 BASE_DIR = Path(__file__).parent
@@ -256,6 +256,20 @@ class ManageByTokenHandler(BaseHandler):
         self.write_json({**public_booking(b), "edit_token": b["edit_token"]})
 
 
+class SendMagicLinkHandler(BaseHandler):
+    def post(self):
+        data = self.parse_json()
+        booking_id = data.get("booking_id")
+        if not booking_id:
+            return self.write_json({"error": "Missing booking_id"}, 400)
+        row = query("SELECT * FROM bookings WHERE id=%s", (booking_id,), one=True)
+        if row:
+            threading.Thread(
+                target=send_magic_link, args=(dict(row),), daemon=True
+            ).start()
+        self.write_json({"success": True})
+
+
 # ── Reminder scheduler ──────────────────────────────────────────────────────
 def send_reminders():
     now    = datetime.now(timezone.utc)
@@ -281,6 +295,7 @@ def make_app():
         (r"/api/bookings",       BookingsHandler),
         (r"/api/bookings/(\d+)", BookingHandler),
         (r"/api/manage/([^/]+)", ManageByTokenHandler),
+        (r"/api/send-magic-link", SendMagicLinkHandler),
         (r"/(.*)", tornado.web.StaticFileHandler, {
             "path": public_dir,
             "default_filename": "index.html",

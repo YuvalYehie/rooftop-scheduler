@@ -62,7 +62,8 @@ document.addEventListener('DOMContentLoaded', () => {
     buttonText: { listMonth: 'List' },
     height: 'auto',
     nowIndicator: true,
-    eventTimeFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
+    eventTimeFormat:    { hour: '2-digit', minute: '2-digit', hour12: false },
+    slotLabelFormat:    { hour: '2-digit', minute: '2-digit', hour12: false },
     events: fetchEvents,
     eventClick(info) { openDetailModal(info.event.id); },
     dateClick(info) {
@@ -247,13 +248,9 @@ async function openDetailModal(id, prefetched) {
     ${!token ? `
       <hr style="margin:16px 0;border:none;border-top:1px solid var(--gray-200)"/>
       <div class="token-box">
-        <p>Have the management link for this booking? Enter your token below to edit or cancel.</p>
-        <div style="display:flex;gap:8px">
-          <input type="text" id="tokenInput" placeholder="Paste your token here…"
-            style="flex:1;padding:9px 12px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:14px"/>
-          <button class="btn btn-ghost btn-sm" onclick="unlockWithToken(${booking.id})">Unlock</button>
-        </div>
-        <div id="tokenAlert" style="margin-top:8px"></div>
+        <p>Is this your booking? We'll send a management link to the email you used.</p>
+        <div id="magicLinkAlert" style="margin-top:4px"></div>
+        <button class="btn btn-green btn-sm" id="magicLinkBtn" onclick="sendMagicLink(${booking.id})" style="margin-top:4px">Send me the link</button>
       </div>` : ''}
   `;
 
@@ -277,25 +274,28 @@ function closeDetailModal() {
   window._detailBooking = null;
 }
 
-async function unlockWithToken(id) {
-  const input = document.getElementById('tokenInput');
-  const tok   = input.value.trim();
-  if (!tok) return;
-  // Verify by trying to fetch manage endpoint
+async function sendMagicLink(id) {
+  const btn      = document.getElementById('magicLinkBtn');
+  const alertBox = document.getElementById('magicLinkAlert');
+
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Sending…'; }
+  alertBox.innerHTML = '';
+
   try {
-    const res  = await fetch(`/api/manage/${tok}`);
-    const data = await res.json();
-    if (!res.ok || data.id !== id) {
-      document.getElementById('tokenAlert').innerHTML =
-        `<div class="alert alert-err">Token not valid for this booking.</div>`;
-      return;
-    }
-    saveToken(id, tok);
-    closeDetailModal();
-    openDetailModal(id);
+    await fetch('/api/send-magic-link', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ booking_id: id })
+    });
+    alertBox.innerHTML = `
+      <div class="alert alert-ok" style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+        <span>✅ Check your email!</span>
+        <button class="btn btn-ghost btn-sm" onclick="sendMagicLink(${id})" style="white-space:nowrap">Resend</button>
+      </div>`;
+    if (btn) btn.style.display = 'none';
   } catch {
-    document.getElementById('tokenAlert').innerHTML =
-      `<div class="alert alert-err">Could not verify token.</div>`;
+    alertBox.innerHTML = `<div class="alert alert-err">Network error — please try again.</div>`;
+    if (btn) { btn.disabled = false; btn.innerHTML = 'Send me the link'; }
   }
 }
 
