@@ -75,12 +75,16 @@ def query(sql, params=(), one=False):
 
 
 def execute(sql, params=()):
-    """Run INSERT/UPDATE/DELETE, return cursor."""
+    """Run INSERT/UPDATE/DELETE. Returns fetchone() result if available (e.g. RETURNING)."""
     db = get_db()
     with db.cursor() as cur:
         cur.execute(sql, params)
+        try:
+            result = cur.fetchone()
+        except Exception:
+            result = None
         db.commit()
-        return cur
+        return result
 
 
 def public_booking(b) -> dict:
@@ -171,13 +175,13 @@ class BookingsHandler(BaseHandler):
             }, 409)
 
         token = str(uuid.uuid4())
-        cur = execute(
+        result = execute(
             "INSERT INTO bookings (building,apartment,name,email,title,description,"
             "start_time,end_time,edit_token) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id",
             (data["building"], data["apartment"], data["name"], data["email"].lower(),
              data["title"], data["description"], data["start_time"], data["end_time"], token),
         )
-        new_id = cur.fetchone()["id"]
+        new_id = result["id"]
         booking = dict(query("SELECT * FROM bookings WHERE id=%s", (new_id,), one=True))
 
         threading.Thread(target=send_confirmation, args=(booking,), daemon=True).start()
