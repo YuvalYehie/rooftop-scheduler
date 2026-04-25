@@ -22,7 +22,7 @@ from email.mime.text import MIMEText
 
 def _fmt(iso: str) -> str:
     dt = datetime.fromisoformat(iso.replace("Z", "+00:00")).astimezone()
-    return dt.strftime("%A, %B %-d %Y at %-I:%M %p")
+    return dt.strftime("%A, %B %-d %Y at %H:%M")
 
 
 def _send_gmail(to_email: str, subject: str, text: str, html: str) -> bool:

@@ -32,7 +32,7 @@ function toLocalInput(iso) {
 function fmtDateTime(iso) {
   return new Date(iso).toLocaleString('en-US', {
     weekday:'short', month:'short', day:'numeric',
-    year:'numeric', hour:'numeric', minute:'2-digit'
+    year:'numeric', hour:'2-digit', minute:'2-digit', hour12:false
   });
 }
 
@@ -299,7 +299,7 @@ async function unlockWithToken(id) {
 }
 
 function formatTimeRange(start, end) {
-  const fmt = iso => new Date(iso).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+  const fmt = iso => new Date(iso).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:false});
   return `${fmt(start)} – ${fmt(end)}`;
 }
 
