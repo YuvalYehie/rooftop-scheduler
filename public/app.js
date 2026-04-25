@@ -205,11 +205,8 @@ async function submitBooking(e) {
       return;
     }
 
-    // Success
+    // Success — save token so this browser can edit/cancel without needing the email link
     saveToken(data.id, data.edit_token);
-    const link = `${location.origin}/?token=${data.edit_token}`;
-    document.getElementById('successLink').href = link;
-    document.getElementById('successLink').textContent = link;
     document.getElementById('bookingForm').style.display = 'none';
     document.getElementById('bookingFooter').style.display = 'none';
     document.getElementById('bookingSuccess').style.display = 'block';
@@ -310,10 +307,26 @@ function esc(str) {
 
 // ── Cancel ───────────────────────────────────────────────────
 
-async function cancelBooking(id) {
+function cancelBooking(id) {
+  // Show inline confirmation in the modal footer instead of browser confirm()
+  const footer = document.getElementById('detailFooter');
+  footer.innerHTML = `
+    <div style="width:100%">
+      <p style="margin:0 0 12px;font-size:14px;color:var(--gray-700);font-weight:600">
+        ⚠️ Cancel this booking? This cannot be undone.
+      </p>
+      <div style="display:flex;gap:10px;justify-content:flex-end">
+        <button class="btn btn-ghost" onclick="openDetailModal(${id}, window._detailBooking)">Keep it</button>
+        <button class="btn btn-red" id="confirmCancelBtn" onclick="confirmCancelBooking(${id})">Yes, cancel</button>
+      </div>
+    </div>`;
+}
+
+async function confirmCancelBooking(id) {
   const token = getToken(id);
   if (!token) return;
-  if (!confirm('Are you sure you want to cancel this booking? This cannot be undone.')) return;
+  const btn = document.getElementById('confirmCancelBtn');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Cancelling…'; }
 
   try {
     const res = await fetch(`/api/bookings/${id}`, {
@@ -322,7 +335,6 @@ async function cancelBooking(id) {
       body: JSON.stringify({ edit_token: token })
     });
     if (res.ok) {
-      // Remove from local storage
       const map = getTokenMap();
       delete map[id];
       localStorage.setItem(TOKEN_KEY, JSON.stringify(map));
@@ -330,10 +342,14 @@ async function cancelBooking(id) {
       calendar.refetchEvents();
     } else {
       const d = await res.json();
-      alert('Error: ' + (d.error || 'Could not cancel booking.'));
+      const footer = document.getElementById('detailFooter');
+      footer.innerHTML = `
+        <div class="alert alert-err" style="width:100%;margin:0">${d.error || 'Could not cancel booking.'}</div>`;
     }
   } catch {
-    alert('Network error — please try again.');
+    const footer = document.getElementById('detailFooter');
+    footer.innerHTML = `
+      <div class="alert alert-err" style="width:100%;margin:0">Network error — please try again.</div>`;
   }
 }
 
