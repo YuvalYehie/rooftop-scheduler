@@ -62,6 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
     buttonText: { listMonth: 'List' },
     height: 'auto',
     nowIndicator: true,
+    eventTimeFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
     events: fetchEvents,
     eventClick(info) { openDetailModal(info.event.id); },
     dateClick(info) {
