@@ -2,6 +2,26 @@
    Rooftop Scheduler — frontend logic
    ────────────────────────────────────────────────────────────── */
 
+// ── Theme ────────────────────────────────────────────────────
+function applyTheme(dark) {
+  document.body.classList.toggle('dark', dark);
+  const btn = document.getElementById('themeToggle');
+  if (btn) btn.textContent = dark ? '☀️' : '🌙';
+}
+
+function toggleTheme() {
+  const isDark = !document.body.classList.contains('dark');
+  localStorage.setItem('rts_theme', isDark ? 'dark' : 'light');
+  applyTheme(isDark);
+}
+
+// Apply saved theme immediately
+(function() {
+  const saved = localStorage.getItem('rts_theme');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  applyTheme(saved ? saved === 'dark' : prefersDark);
+})();
+
 // Token storage: keyed by booking ID
 const TOKEN_KEY = 'rts_tokens'; // localStorage key
 

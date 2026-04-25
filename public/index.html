@@ -134,13 +134,63 @@
     /* ── Loading ── */
     .spinner { display:inline-block; width:18px; height:18px; border:2.5px solid rgba(255,255,255,.4); border-top-color:#fff; border-radius:50%; animation:spin .6s linear infinite; vertical-align:middle; margin-right:6px; }
     @keyframes spin { to { transform:rotate(360deg); } }
+
+    /* ── Night mode toggle ── */
+    .theme-toggle { background:none; border:1.5px solid var(--gray-200); border-radius:8px; padding:6px 10px; font-size:18px; cursor:pointer; line-height:1; transition:.15s; color:var(--gray-700); }
+    .theme-toggle:hover { background:var(--gray-100); }
+    .header-actions { display:flex; align-items:center; gap:10px; }
+
+    /* ── Dark mode ── */
+    body.dark {
+      --gray-50: #0f172a;
+      --gray-100:#1e293b;
+      --gray-200:#334155;
+      --gray-400:#64748b;
+      --gray-500:#94a3b8;
+      --gray-700:#cbd5e1;
+      --gray-900:#f1f5f9;
+      --shadow: 0 4px 24px rgba(0,0,0,.5);
+      background: var(--gray-50);
+      color: var(--gray-900);
+    }
+    body.dark header        { background:#1e293b; }
+    body.dark #calendar     { background:#1e293b; }
+    body.dark .modal        { background:#1e293b; }
+    body.dark .field input,
+    body.dark .field textarea { background:#0f172a; color:var(--gray-900); border-color:var(--gray-200); }
+    body.dark .field input::placeholder,
+    body.dark .field textarea::placeholder { color:var(--gray-400); }
+    body.dark .alert-err  { background:#450a0a; border-color:#7f1d1d; color:#fca5a5; }
+    body.dark .alert-ok   { background:#052e16; border-color:#14532d; color:#86efac; }
+    body.dark .alert-warn { background:#422006; border-color:#78350f; color:#fcd34d; }
+    /* FullCalendar dark overrides */
+    body.dark .fc-theme-standard td,
+    body.dark .fc-theme-standard th,
+    body.dark .fc-scrollgrid          { border-color:#334155 !important; }
+    body.dark .fc-col-header-cell     { background:#1e293b; }
+    body.dark .fc-daygrid-day         { background:#1e293b; }
+    body.dark .fc-daygrid-day:hover   { background:#263449; }
+    body.dark .fc-day-today           { background:#1a3a2a !important; }
+    body.dark .fc-toolbar-title,
+    body.dark .fc-col-header-cell-cushion,
+    body.dark .fc-daygrid-day-number,
+    body.dark .fc-list-event-title,
+    body.dark .fc-list-day-cushion    { color:#f1f5f9 !important; }
+    body.dark .fc-list-day-side-text  { color:#94a3b8 !important; }
+    body.dark .fc-list-event:hover td { background:#263449 !important; }
+    body.dark .fc-timegrid-slot,
+    body.dark .fc-timegrid-axis       { background:#1e293b; border-color:#334155 !important; }
+    body.dark .fc-timegrid-slot-label { color:#94a3b8; }
   </style>
 </head>
 <body>
 
 <header>
   <div class="logo"><span>🏙️</span> Sirkin 15 Rooftop Scheduler</div>
-  <button class="btn btn-green" onclick="openBookingModal()">+ Reserve Rooftop</button>
+  <div class="header-actions">
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle night mode">🌙</button>
+    <button class="btn btn-green" onclick="openBookingModal()">+ Reserve Rooftop</button>
+  </div>
 </header>
 
 <div id="calendar-wrap">
